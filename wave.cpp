@@ -497,34 +497,37 @@ class Grid {
 
   void write_data(string &path) {
     stringstream ss;
+    stringstream ss_e;
 
     double v2  = 0;
     double ux2 = 0;
-
     double uy2 = 0;
     double energy = 0;
 
 
     string filename = "data";
+    string filename_e = "energy";
     string suffix = ".dat";
     string sep = "_";
 
     ss   << path << "/" << filename << sep << p.n_step << suffix;
+    ss_e   << path << "/" << filename_e << sep << p.n_step << suffix;
 
     ofstream ofs(ss.str().c_str(), ios::trunc);
+    ofstream ofs_e(ss_e.str().c_str(), ios::trunc);
 
     for (int j = 0; j < p.vec_size_y; j++) {
       for (int i = 0; i < p.vec_size_x; i++) {
         ofs << grid[PRESENT][j][i] << " ";
         v2 =  diffv(i, j);
-        energy_file << v2 << " ";
+        ofs_e << v2 << " ";
 //        v2 =  pow(diffv(i, j), 2);
 //        ux2 = pow(diffx(i, j), 2);
 //        uy2 = pow(diffy(i, j), 2);
 //        energy += v2 + p.v*p.v * (ux2 + uy2);
       }
       ofs << endl;
-      this->energy_file << endl;
+      ofs_e << endl;
     }
 //    this->energy_file << energy*p.dx*p.dy << endl;
   }
