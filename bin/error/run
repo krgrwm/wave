@@ -1,0 +1,1 @@
+bin/error/error_plane_wave && gnuplot -p bin/error/plot_error_plane_wave

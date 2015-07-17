@@ -1,0 +1,11 @@
+source $1
+
+echo $data_dir
+if [ ! -e $data_dir ]; then
+    mkdir $data_dir
+fi
+
+/bin/rm $data_dir/*
+
+./wave $data_dir $init $init_past $source $obstacle $system_size_x $system_size_y $time \
+$dx $dy $dt $v $boundary $energy_flag

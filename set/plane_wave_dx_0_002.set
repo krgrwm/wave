@@ -1,0 +1,14 @@
+data_dir=./data/plane_wave_dx_0_002
+init=0
+init_past=0
+source=2
+obstacle=0
+system_size_x=2
+system_size_y=0.05
+time=4.0
+dx=0.002
+dy=0.002
+dt=0.002
+v=0.3
+boundary=1
+energy_flag=0

@@ -1,0 +1,29 @@
+#!/usr/bin/env zsh
+
+plot_anim_file=$1
+set_file=$2
+every=$3
+
+source $set_file
+
+end_time=$(( time / dt ))
+xmax=$(( system_size_x / dx ))
+ymax=$(( system_size_y / dy ))
+
+if [[ $every -eq 0 ]]; then
+    every=8
+fi
+
+every_x=$(( xmax / every ))
+every_y=$(( ymax / every ))
+
+if [[ every_y -le 1 ]]; then
+    every_y=1
+fi
+if [[ every_x -le 1 ]]; then
+    every_x=1
+fi
+
+echo "n: 0 - $end_time"
+
+/bin/gnuplot -e "data_dir='$data_dir'; end_time='$end_time'; xmax='$xmax'; ymax='$ymax'; every_x='$every_x'; every_y='$every_y'" $1

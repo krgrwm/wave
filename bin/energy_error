@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+
+data_dir=$1
+
+export e0=$(head -n 1 $data_dir/energy)
+
+# 絶対誤差
+perl -wnle 'print abs($_ - $ENV{e0})' $data_dir/energy \
+    >! $data_dir/energy_error

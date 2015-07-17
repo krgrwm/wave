@@ -1,0 +1,3 @@
+set_file=$1
+every=$2
+bin/plot bin/anim.plt $set_file $every

@@ -1,0 +1,9 @@
+set_file=$1
+source $set_file
+
+if [[ $# -ne 1 ]]; then
+    echo "run_energy_error set_dir"
+    return 1
+fi
+
+bin/run $set_file && bin/energy $data_dir $v && bin/energy_error $data_dir

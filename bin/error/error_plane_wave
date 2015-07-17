@@ -1,0 +1,4 @@
+file="data/plane_wave.errors"
+/bin/rm $file
+touch $file
+bin/error/_error_plane_wave | perl -wnlae 'print $F[2], " ", $F[5]' > $file

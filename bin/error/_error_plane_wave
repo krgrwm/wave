@@ -1,0 +1,17 @@
+#!/usr/bin/env zsh
+
+zmodload zsh/mathfunc
+
+t=4.0
+x=0.4
+
+for i in $(ls -d set/plane_wave_dx_0_0* | sort -n -r) ; do
+    . $i
+    export xn=$(( x / dx ))
+    export n=$(( int(t / dt) ))
+    export dx
+    export dt
+    echo -n $i $xn $dx $n $dt " "
+    /bin/head -n 1 $data_dir/data_$n.dat \
+        | /bin/perl -wnlae 'print abs($F[$ENV{xn}] + sin(100.0/3.0*(($ENV{xn} - 1)*$ENV{dx} - 0.3*($ENV{n}*$ENV{dt})))) '
+done

@@ -1,0 +1,21 @@
+#!/usr/bin/zsh
+
+set_file=$1
+
+source $set_file
+
+export v
+export dx
+export dy
+
+echo 'vdat...'
+./bin/sum_all $data_dir vdat >! $data_dir/sum_v
+echo 'uxdat...'
+./bin/sum_all $data_dir uxdat >! $data_dir/sum_ux
+echo 'uydat...'
+./bin/sum_all $data_dir uydat >! $data_dir/sum_uy
+
+echo 'energy'
+paste $data_dir/sum_v $data_dir/sum_ux $data_dir/sum_uy \
+    | perl -wnlae 'print( ($F[0] + $ENV{v}*$ENV{v}*($F[1]+$F[2])) * $ENV{dx}*$ENV{dy} )' \
+>! $data_dir/energy

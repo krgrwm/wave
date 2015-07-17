@@ -1,0 +1,14 @@
+data_dir=./data/gauss
+init=1
+init_past=0
+source=0
+obstacle=0
+system_size_x=1
+system_size_y=1
+time=50
+dx=0.02
+dy=0.02
+dt=0.01
+v=1.0
+boundary=1
+energy_flag=1
