@@ -497,7 +497,9 @@ class Grid {
 
   void write_data(string &path) {
     stringstream ss;
-    stringstream ss_e;
+    stringstream ss_v;
+    stringstream ss_ux;
+    stringstream ss_uy;
 
     double v2  = 0;
     double ux2 = 0;
@@ -506,28 +508,40 @@ class Grid {
 
 
     string filename = "data";
-    string filename_e = "energy";
     string suffix = ".dat";
+    string suffix_v = ".vdat";
+    string suffix_ux = ".uxdat";
+    string suffix_uy = ".uydat";
     string sep = "_";
 
     ss   << path << "/" << filename << sep << p.n_step << suffix;
-    ss_e   << path << "/" << filename_e << sep << p.n_step << suffix;
+    ss_v   << path << "/" << filename << sep << p.n_step << suffix_v;
+    ss_ux   << path << "/" << filename << sep << p.n_step << suffix_ux;
+    ss_uy   << path << "/" << filename << sep << p.n_step << suffix_uy;
 
     ofstream ofs(ss.str().c_str(), ios::trunc);
-    ofstream ofs_e(ss_e.str().c_str(), ios::trunc);
+    ofstream ofs_v(ss_v.str().c_str(), ios::trunc);
+    ofstream ofs_ux(ss_ux.str().c_str(), ios::trunc);
+    ofstream ofs_uy(ss_uy.str().c_str(), ios::trunc);
 
     for (int j = 0; j < p.vec_size_y; j++) {
       for (int i = 0; i < p.vec_size_x; i++) {
         ofs << grid[PRESENT][j][i] << " ";
         v2 =  diffv(i, j);
-        ofs_e << v2 << " ";
+        ux2 = diffx(i, j);
+        uy2 = diffy(i, j);
+        ofs_v << v2 << " ";
+        ofs_ux << ux2 << " ";
+        ofs_uy << uy2 << " ";
 //        v2 =  pow(diffv(i, j), 2);
 //        ux2 = pow(diffx(i, j), 2);
 //        uy2 = pow(diffy(i, j), 2);
 //        energy += v2 + p.v*p.v * (ux2 + uy2);
       }
       ofs << endl;
-      ofs_e << endl;
+      ofs_v << endl;
+      ofs_ux << endl;
+      ofs_uy << endl;
     }
 //    this->energy_file << energy*p.dx*p.dy << endl;
   }
