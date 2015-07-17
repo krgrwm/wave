@@ -515,14 +515,17 @@ class Grid {
     for (int j = 0; j < p.vec_size_y; j++) {
       for (int i = 0; i < p.vec_size_x; i++) {
         ofs << grid[PRESENT][j][i] << " ";
-        v2 =  pow(diffv(i, j), 2);
-        ux2 = pow(diffx(i, j), 2);
-        uy2 = pow(diffy(i, j), 2);
-        energy += v2 + p.v*p.v * (ux2 + uy2);
+        v2 =  diffv(i, j);
+        energy_file << v2 << " ";
+//        v2 =  pow(diffv(i, j), 2);
+//        ux2 = pow(diffx(i, j), 2);
+//        uy2 = pow(diffy(i, j), 2);
+//        energy += v2 + p.v*p.v * (ux2 + uy2);
       }
       ofs << endl;
+      this->energy_file << endl;
     }
-    this->energy_file << energy*p.dx*p.dy << endl;
+//    this->energy_file << energy*p.dx*p.dy << endl;
   }
 
   void write_param(string &path) 
