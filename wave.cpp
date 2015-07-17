@@ -120,7 +120,7 @@ class Init_half : public Initialize
   public:
   double run(Parameter &p, int i, int j)
   {
-    double L = p.system_size_x;
+    int L = p.system_size_x;
     double x = i * p.dx;
 
     return 0.05*sin(2.0*M_PI*x/L);
@@ -415,13 +415,17 @@ class Grid {
 
   double diffv(int i, int j)
   {
-    return grid[FUTURE][j][i] - grid[PAST][j][i] / (2*p.dt);
+    double dv=0;
+
+    dv = grid[PRESENT][j][i] - grid[PAST][j][i] / (p.dt);
+    return dv;
   }
 
   double diffx(int i, int j)
   {
     double ux=0;
 
+    // 境界のポテンシャルの計算に問題がありそう
     if (0 == i) {
       ux = (grid[PRESENT][j][i+1] - grid[PRESENT][j][i]) / p.dx;
     } else if (p.vec_size_x-1 == i) {
@@ -474,11 +478,17 @@ class Grid {
     set_boundary(PRESENT);
     set_boundary(PAST);
     update_grid();
-    set_boundary(FUTURE);
+//    set_boundary(FUTURE);
 
     // shift
     grid[PAST] = grid[PRESENT];
     grid[PRESENT] = grid[FUTURE];
+
+    // init to zero
+    // DEL 意味ないかも
+    for (int i = 0; i < p.vec_size_y; i++) {
+      fill(grid[FUTURE][i].begin(), grid[FUTURE][i].end(), 0);
+    }
 
     p.step();
   }

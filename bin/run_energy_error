@@ -6,4 +6,4 @@ if [[ $# -ne 1 ]]; then
     return 1
 fi
 
-bin/run $set_file && bin/energy $data_dir $v && bin/energy_error $data_dir
+bin/run $set_file && bin/energy $set_file $v && bin/energy_error $data_dir
