@@ -500,6 +500,7 @@ class Grid {
 
     double v2  = 0;
     double ux2 = 0;
+
     double uy2 = 0;
     double energy = 0;
 
