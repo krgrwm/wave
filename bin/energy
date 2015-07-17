@@ -8,6 +8,7 @@ export v
 export dx
 export dy
 
+echo "DATA" $data_dir
 echo 'vdat...'
 ./bin/sum_all $data_dir vdat >! $data_dir/sum_v
 echo 'uxdat...'

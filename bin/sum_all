@@ -1,8 +1,5 @@
 #!/usr/bin/env zsh
 #$2 = suffix vdat, uxdat, uydat
-#for i in $(ls $1/*$2 | sort -t "_" -n -k 2,2); do
-#    bin/sum $i
-#done
-for i in $(ls $1/*$2* | sort -t "_" -n -k 2,2); do
+for i in $(ls $1/*$2 | sort -t "_" -n -k 2,2); do
     bin/sum $i
 done
