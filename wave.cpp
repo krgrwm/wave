@@ -44,6 +44,8 @@ class Parameter {
     n_step = 0;
     vec_size_x = system_size_x / dx ;
     vec_size_y = system_size_y / dy ;
+    cout << vec_size_x << endl;
+    cout << vec_size_y << endl;
   }
 
   void step()
@@ -369,6 +371,8 @@ class Grid {
   Parameter p;
   Functions f;
   ofstream energy_file;
+  ofstream T_file;;
+  ofstream potential_file;
 
 
   void init_grid_present()
@@ -455,8 +459,7 @@ class Grid {
   public:
   Grid(int ninit, int ninit_past, int nsource, int nobstacle, int nboundary, double _system_size_x, double _system_size_y, double _dx, double _dy, double _dt, 
       double _v, int energy_flag, string &path)
-    : p(_system_size_x, _system_size_y, _dx, _dy, _dt, _v),
-      energy_file("energy", ios::trunc)
+    : p(_system_size_x, _system_size_y, _dx, _dy, _dt, _v)
 
   {
     grid = tGridVec(3, GridVec(p.vec_size_y, vector<double>(p.vec_size_x)));
@@ -467,8 +470,14 @@ class Grid {
     set_boundary(PRESENT);
 
     stringstream ss;
+    stringstream sst;
+    stringstream ssp;
     ss   << path << "/" << "energy";
+    sst   << path << "/" << "T";
+    ssp   << path << "/" << "potential";
     energy_file = ofstream(ss.str().c_str(), ios::trunc);
+    T_file = ofstream(sst.str().c_str(), ios::trunc);
+    potential_file = ofstream(ssp.str().c_str(), ios::trunc);
   }
 
   void step()
@@ -478,7 +487,7 @@ class Grid {
     set_boundary(PRESENT);
     set_boundary(PAST);
     update_grid();
-//    set_boundary(FUTURE);
+    set_boundary(FUTURE);
 
     // shift
     grid[PAST] = grid[PRESENT];
@@ -507,53 +516,58 @@ class Grid {
 
   void write_data(string &path) {
     stringstream ss;
-    stringstream ss_v;
-    stringstream ss_ux;
-    stringstream ss_uy;
 
     double v2  = 0;
     double ux2 = 0;
     double uy2 = 0;
     double energy = 0;
+    double T=0;
+    double potential = 0;
 
 
     string filename = "data";
     string suffix = ".dat";
-    string suffix_v = ".vdat";
-    string suffix_ux = ".uxdat";
-    string suffix_uy = ".uydat";
     string sep = "_";
 
     ss   << path << "/" << filename << sep << p.n_step << suffix;
-    ss_v   << path << "/" << filename << sep << p.n_step << suffix_v;
-    ss_ux   << path << "/" << filename << sep << p.n_step << suffix_ux;
-    ss_uy   << path << "/" << filename << sep << p.n_step << suffix_uy;
 
     ofstream ofs(ss.str().c_str(), ios::trunc);
-    ofstream ofs_v(ss_v.str().c_str(), ios::trunc);
-    ofstream ofs_ux(ss_ux.str().c_str(), ios::trunc);
-    ofstream ofs_uy(ss_uy.str().c_str(), ios::trunc);
 
     for (int j = 0; j < p.vec_size_y; j++) {
       for (int i = 0; i < p.vec_size_x; i++) {
         ofs << grid[PRESENT][j][i] << " ";
-        v2 =  diffv(i, j);
-        ux2 = diffx(i, j);
-        uy2 = diffy(i, j);
-        ofs_v << v2 << " ";
-        ofs_ux << ux2 << " ";
-        ofs_uy << uy2 << " ";
-//        v2 =  pow(diffv(i, j), 2);
-//        ux2 = pow(diffx(i, j), 2);
-//        uy2 = pow(diffy(i, j), 2);
-//        energy += v2 + p.v*p.v * (ux2 + uy2);
+        v2 =  pow(diffv(i, j), 2);
+        ux2 = pow(diffx(i, j), 2);
+        uy2 = pow(diffy(i, j), 2);
+        //energy += v2 + p.v*p.v * (ux2 + uy2);
+        T += v2 * p.dx * p.dy;
+        potential += (ux2 + uy2) * p.v * p.v * p.dx*p.dy;
+        energy += T + potential;
       }
       ofs << endl;
-      ofs_v << endl;
-      ofs_ux << endl;
-      ofs_uy << endl;
     }
-//    this->energy_file << energy*p.dx*p.dy << endl;
+    this->T_file << T << endl;
+    this->potential_file << potential << endl;
+    this->energy_file << energy << endl;
+  }
+
+  void write_only_data(string &path) {
+    stringstream ss;
+
+    string filename = "data";
+    string suffix = ".dat";
+    string sep = "_";
+
+    ss   << path << "/" << filename << sep << p.n_step << suffix;
+
+    ofstream ofs(ss.str().c_str(), ios::trunc);
+
+    for (int j = 0; j < p.vec_size_y; j++) {
+      for (int i = 0; i < p.vec_size_x; i++) {
+        ofs << grid[PRESENT][j][i] << " ";
+      }
+      ofs << endl;
+    }
   }
 
   void write_param(string &path) 
@@ -634,10 +648,19 @@ int main(int argc, char const* argv[])
   cout << "dt, dx, dy: " << grid.p.dt << ", " << grid.p.dx << ", " << grid.p.dy << endl;
 
 
-  grid.write_data(path);
+  if (energy_flag) {
+    grid.write_data(path);
+  } else {
+    grid.write_only_data(path);
+  }
   for (int i = 0; i < step; i++) {
     grid.step();
-    grid.write_data(path);
+
+    if (energy_flag) {
+      grid.write_data(path);
+    } else {
+      grid.write_only_data(path);
+    }
     if (i % 10 == 0) {
       cout << i << endl;
     }
