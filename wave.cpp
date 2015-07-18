@@ -33,8 +33,8 @@ class Parameter {
 
   Parameter(const double _system_size_x, const double _system_size_y, const double _dx, const double _dy, const double _dt, const double _v)
   {
-    system_size_x = _system_size_x + 2*_dx;
-    system_size_y = _system_size_y + 2*_dy;
+    system_size_x = _system_size_x;
+    system_size_y = _system_size_y;
     dx = _dx;
     dy = _dy;
     dt = _dt;
@@ -42,8 +42,8 @@ class Parameter {
     b0 = 0.0;
     t = 0.0;
     n_step = 0;
-    vec_size_x = system_size_x / dx ;
-    vec_size_y = system_size_y / dy ;
+    vec_size_x = system_size_x / dx +1;
+    vec_size_y = system_size_y / dy +1;
     cout << vec_size_x << endl;
     cout << vec_size_y << endl;
   }
@@ -122,8 +122,8 @@ class Init_half : public Initialize
   public:
   double run(Parameter &p, int i, int j)
   {
-    int xL = p.system_size_x - 2*p.dx;
-    int yL = p.system_size_y - 2*p.dy;
+    double xL = p.system_size_x;
+    double yL = p.system_size_y;
     double x = i * p.dx;
     double y = j * p.dy;
 
@@ -283,7 +283,7 @@ class Boundary_fixed : public Boundary
   public:
   void run(Parameter &p, tGridVec &g, const E_TIME &T)
   {
-    double b0=0;
+    double b0=0.0;
 
     for (int i = 0; i < p.vec_size_x; i++) {
       g[T][0][i] = b0;
@@ -384,8 +384,8 @@ class Grid {
 
   void init_grid_present()
   {
-    for (int j = 0; j < p.vec_size_y-1; j++) {
-      for (int i = 0; i < p.vec_size_x-1; i++) {
+    for (int j = 0; j < p.vec_size_y; j++) {
+      for (int i = 0; i < p.vec_size_x; i++) {
         grid[PRESENT][j][i] = (f.init)->run(p, i, j);
       }
     }
@@ -393,8 +393,8 @@ class Grid {
 
   void init_grid_past()
   {
-    for (int j = 0; j < p.vec_size_y-1; j++) {
-      for (int i = 0; i < p.vec_size_x-1; i++) {
+    for (int j = 0; j < p.vec_size_y; j++) {
+      for (int i = 0; i < p.vec_size_x; i++) {
         grid[PAST][j][i] = (f.init_past)->run(p, i, j);
       }
     }

@@ -1,2 +1,0 @@
-file=$1
-perl -wnla -e '@a=map {$_**2} @F and print join(" ", @a)' $file

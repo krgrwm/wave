@@ -1,3 +1,0 @@
-export scale=$1
-file=$2
-perl -wnla -e '@a=map {$_ / $ENV{scale}} @F and print join(" ", @a)' $file
