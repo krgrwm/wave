@@ -2,11 +2,10 @@
 
 zmodload zsh/mathfunc
 
-t=4.0
+t=1.0
 x=0.4
 
-echo -n "file" "xn" "dx" "n" "dt" "error\n"
-for i in $(ls -d set/plane_wave_dx_0_0* | sort -n -r) ; do
+for i in $(ls -d set/plane_wave_<->) ; do
     . $i
     export xn=$(( x / dx ))
     export n=$(( int(t / dt) ))

@@ -1,0 +1,15 @@
+#!/usr/bin/env zsh
+zmodload zsh/mathfunc
+
+file=$1
+a=0.1
+omega=50.0
+v=1.0
+k=$(( omega/v ))
+
+source $file
+n=$(( int(time / dt) ))
+#xr=$(( system_size_x / dx / 2 ))
+xr=$(( system_size_x / dx ))
+
+gnuplot -e "a='$a'; v='$v'; k='$k'; dx='$dx'; dt='$dt'; time='$time'; xr='$xr'; file='$file'; n='$n'" -p plot_diff.plt

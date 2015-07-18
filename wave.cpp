@@ -129,6 +129,7 @@ class Init_half : public Initialize
   }
 };
 
+
 class Source_plane_wave : public Source
 {
   public:
@@ -204,6 +205,7 @@ class Source_ship: public Source
     g[PRESENT][int(p.vec_size_y/2)][p.n_step] = -0.1;
   }
 };
+
 
 class Obstacle_slit : public Obstacle
 {
@@ -492,12 +494,6 @@ class Grid {
     // shift
     grid[PAST] = grid[PRESENT];
     grid[PRESENT] = grid[FUTURE];
-
-    // init to zero
-    // DEL 意味ないかも
-    for (int i = 0; i < p.vec_size_y; i++) {
-      fill(grid[FUTURE][i].begin(), grid[FUTURE][i].end(), 0);
-    }
 
     p.step();
   }
