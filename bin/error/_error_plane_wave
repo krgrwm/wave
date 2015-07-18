@@ -3,16 +3,18 @@
 zmodload zsh/mathfunc
 
 t=1.0
-x=0.4
+x=0.40
 
 for i in $(ls -d set/plane_wave_<->) ; do
-    . $i
-    export xn=$(( x / dx ))
+    source $i
+    export xn=$(( int(x / dx) ))
+    yn=$(( int(system_size_y / dy) ))
+#    echo $yn
     export n=$(( int(t / dt) ))
     export dx
     export dt
     export v
     echo -n $i $xn $dx $n $dt " "
-    /bin/head -n 1 $data_dir/data_$n.dat \
-        | /bin/perl -wnlae 'print abs($F[$ENV{xn}] + 0.1*sin(50.0/$ENV{v}*(($ENV{xn} - 1)*$ENV{dx} - $ENV{v}*($ENV{n}*$ENV{dt})))) '
+    sed -n "$yn,$yn p" $data_dir/data_$n.dat \
+        | /bin/perl -wnlae 'print abs($F[$ENV{xn}] + sin(50.0/$ENV{v}*(($ENV{xn} - 1)*$ENV{dx} - $ENV{v}*($ENV{n}*$ENV{dt})))) '
 done

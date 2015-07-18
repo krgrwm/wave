@@ -2,13 +2,14 @@
 zmodload zsh/mathfunc
 
 file=$1
-a=0.1
+a=1.0
 omega=50.0
 v=1.0
 k=$(( omega/v ))
+t=1.0
 
 source $file
-n=$(( int(time / dt) ))
+n=$(( int(t / dt) ))
 #xr=$(( system_size_x / dx / 2 ))
 xr=$(( system_size_x / dx ))
 

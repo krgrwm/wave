@@ -137,7 +137,7 @@ class Source_plane_wave : public Source
   {
     double omega = 50;
     for (int j = 0; j < p.vec_size_y; j++) {
-      g[PRESENT][j][1] = 0.1*sin(omega*p.t);
+      g[PRESENT][j][1] = sin(omega*p.t);
     }
   }
 };
@@ -574,17 +574,17 @@ class Grid {
     ss << path << "/" << filename << suffix;
     ofstream ofs(ss.str().c_str(), ios::trunc);
 
-    ofs << "system_size_x " << p.system_size_x << endl;
-    ofs << "system_size_y " << p.system_size_y << endl;
-    ofs << "t "    << p.t    << endl;
-    ofs << "dx "   << p.dx   << endl;
-    ofs << "dy "   << p.dy   << endl;
-    ofs << "dt "   << p.dt   << endl;
-    ofs << "v "    << p.v    << endl;
-    ofs << "vec_size_x " << p.vec_size_x << endl;
-    ofs << "vec_size_y " << p.vec_size_y << endl;
-    ofs << "b0 "   << p.b0   << endl;
-    ofs << "step "    << p.n_step << endl;
+    ofs << "_system_size_x=" << p.system_size_x << endl;
+    ofs << "_system_size_y=" << p.system_size_y << endl;
+    ofs << "_t="    << p.t    << endl;
+    ofs << "_dx="   << p.dx   << endl;
+    ofs << "_dy="   << p.dy   << endl;
+    ofs << "_dt="   << p.dt   << endl;
+    ofs << "_v="    << p.v    << endl;
+    ofs << "_vec_size_x=" << p.vec_size_x << endl;
+    ofs << "_vec_size_y=" << p.vec_size_y << endl;
+    ofs << "_b0="   << p.b0   << endl;
+    ofs << "_step="    << p.n_step << endl;
   }
 };
 

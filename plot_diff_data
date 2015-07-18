@@ -2,9 +2,10 @@
 zmodload zsh/mathfunc
 
 file=$1
+t=1.0
 source $file
-_n=$(( time / dt ))
+_n=$(( t / dt ))
 #echo $_n
-n=$(( int(time/dt) ))
+n=$(( int(t/dt) ))
 
 head -n 1 $data_dir"/data_"$n".dat" # | perl -wnlae 'print join(" ", @F[0..@F])'
