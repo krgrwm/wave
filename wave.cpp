@@ -33,8 +33,8 @@ class Parameter {
 
   Parameter(const double _system_size_x, const double _system_size_y, const double _dx, const double _dy, const double _dt, const double _v)
   {
-    system_size_x = _system_size_x;
-    system_size_y = _system_size_y;
+    system_size_x = _system_size_x + 2*_dx;
+    system_size_y = _system_size_y + 2*_dy;
     dx = _dx;
     dy = _dy;
     dt = _dt;
@@ -122,10 +122,15 @@ class Init_half : public Initialize
   public:
   double run(Parameter &p, int i, int j)
   {
-    int L = p.system_size_x;
+    int xL = p.system_size_x - 2*p.dx;
+    int yL = p.system_size_y - 2*p.dy;
     double x = i * p.dx;
+    double y = j * p.dy;
 
-    return 0.05*sin(2.0*M_PI*x/L);
+    int k1 = 2;
+    int k2 = 1;
+
+    return 0.05*sin(k1*M_PI*x/xL) * sin(k2*M_PI*y/yL);
   }
 };
 

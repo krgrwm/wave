@@ -1,5 +1,5 @@
 data_dir=data/half
-init=0
+init=3
 init_past=3
 source=0
 obstacle=0
