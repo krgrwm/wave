@@ -144,7 +144,7 @@ class Init_half : public Initialize
       double x = i * p.dx;
       double y = j * p.dy;
 
-      return sin(k1*M_PI*x/xL) * sin(k2*M_PI*y/yL) * cos(omega * t);
+      return sin(k1*M_PI*x/xL) * sin(k2*M_PI*y/yL) * sin(omega * t);
     }
 };
 
@@ -179,7 +179,7 @@ class Init_half_past : public Initialize
       return 
         ih.run(p, i, j)
         +
-        t * sin(k1*M_PI*x/xL) * sin(k2*M_PI*y/yL) * omega * sin(omega * 0);
+        p.dt * sin(k1*M_PI*x/xL) * sin(k2*M_PI*y/yL) * omega;
     }
 };
 
@@ -390,8 +390,8 @@ class Functions {
           p_initialize(new Init_gauss()),
           p_initialize(new Init_gauss_pulse()),
           p_initialize(new Init_half(p, 0.0)),
-//          p_initialize(new Init_half_past(p, -p.dt)),
-          p_initialize(new Init_half(p, -p.dt)),
+          p_initialize(new Init_half_past(p, -11111)),
+//          p_initialize(new Init_half(p, -p.dt)),
           });
 
       vec_source = vector<p_source>({
@@ -749,7 +749,7 @@ int main(int argc, char const* argv[])
   double omega = sqrt(omega2);
   double result = 
     sin(k1*M_PI*(vec_x*dx)/xL) * sin(k2*M_PI*(vec_y*dy)/yL) 
-    * cos(omega * t);
+    * -sin(omega * t);
   cout << "x:" << vec_x*dx << endl;
   cout << "exact: " << result << endl;
   cout << "error:" << endl;
