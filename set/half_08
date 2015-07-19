@@ -1,4 +1,4 @@
-data_dir=data/half_02
+data_dir=data/half_08
 init=3
 obstacle=0
 source=0
@@ -9,6 +9,6 @@ v=1.0
 energy_flag=1
 time=1.0
 init_past=4
-dx=0.004000
-dy=0.004000
-dt=0.002000
+dx=0.256000
+dy=0.256000
+dt=0.128000

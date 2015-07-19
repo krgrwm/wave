@@ -4,13 +4,13 @@ params={'init': 3, 'init_past': 4, 'source': 0, 'obstacle': 0,
 
 data_dir="data"
 set_dir="set"
-dx=0.002
-dy=0.002
-dt=0.001
+dx=0.001
+dy=0.001
+dt=0.0005
 times=2
 at = params['system_size_x'] / 2
 
-for i in range(0, 8):
+for i in range(0, 10):
     f_name = "half_%02d" % i
     print(set_dir + "/" + f_name)
     print("dx=%f" % (dx * times**i), )

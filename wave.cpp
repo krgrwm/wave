@@ -461,7 +461,7 @@ class Grid {
   void update_grid()
   {
     int P = PRESENT;
-    double alpha2 = pow((p.v * p.dt / p.dx), 2);
+    //double alpha2 = pow((p.v * p.dt / p.dx), 2);
 
     for (int j = 1; j < p.vec_size_y-1; j++) {
       for (int i = 1; i < p.vec_size_x-1; i++) {
@@ -715,7 +715,7 @@ int main(int argc, char const* argv[])
   double xL = grid.p.system_size_x;
   double yL = grid.p.system_size_y;
   double x = xL/4;
-  double y = yL/4;
+  double y = yL/2;
   int vec_x = x / grid.p.dx;
   int vec_y = y / grid.p.dy;
 
