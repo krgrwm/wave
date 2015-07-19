@@ -42,8 +42,10 @@ class Parameter {
     b0 = 0.0;
     t = 0.0;
     n_step = 0;
-    vec_size_x = system_size_x / dx ;
-    vec_size_y = system_size_y / dy ;
+    vec_size_x = system_size_x / dx +1;
+    vec_size_y = system_size_y / dy +1;
+    cout << vec_size_x << endl;
+    cout << vec_size_y << endl;
   }
 
   void step()
@@ -81,10 +83,11 @@ class Init_gauss : public Initialize
     double c = p.system_size_x/2;
 
     // $B7O$N%5%$%:$N(B1/10
-    double sigma = pow(p.system_size_x * 0.1, 2);
+    double sigma = (p.system_size_x * p.system_size_x) * p.dx * p.dy;
+
     return 
-      0.01 * 
-      (1./(sqrt(2*M_PI) * sigma)) * 
+      0.0001 * 
+      (1./(sqrt(2.0*M_PI) * sigma)) * 
       exp(-(pow(i*p.dx - c, 2) + pow(j*p.dy - c, 2))/(2*pow(sigma, 2)));
   }
 };
@@ -119,19 +122,25 @@ class Init_half : public Initialize
   public:
   double run(Parameter &p, int i, int j)
   {
-    double L = p.system_size_x;
+    double xL = p.system_size_x;
+    double yL = p.system_size_y;
     double x = i * p.dx;
+    double y = j * p.dy;
 
-    return 0.05*sin(2.0*M_PI*x/L);
+    int k1 = 3;
+    int k2 = 1;
+
+    return 0.05*sin(k1*M_PI*x/xL) * sin(k2*M_PI*y/yL);
   }
 };
+
 
 class Source_plane_wave : public Source
 {
   public:
   void run(Parameter &p, tGridVec &g)
   {
-    double omega = 10;
+    double omega = 50;
     for (int j = 0; j < p.vec_size_y; j++) {
       g[PRESENT][j][1] = sin(omega*p.t);
     }
@@ -201,6 +210,7 @@ class Source_ship: public Source
     g[PRESENT][int(p.vec_size_y/2)][p.n_step] = -0.1;
   }
 };
+
 
 class Obstacle_slit : public Obstacle
 {
@@ -273,7 +283,7 @@ class Boundary_fixed : public Boundary
   public:
   void run(Parameter &p, tGridVec &g, const E_TIME &T)
   {
-    double b0=0;
+    double b0=0.0;
 
     for (int i = 0; i < p.vec_size_x; i++) {
       g[T][0][i] = b0;
@@ -367,13 +377,15 @@ class Grid {
   tGridVec grid;
   Parameter p;
   Functions f;
-  ofstream energy;
+  ofstream energy_file;
+  ofstream T_file;;
+  ofstream potential_file;
 
 
   void init_grid_present()
   {
-    for (int j = 0; j < p.vec_size_y-1; j++) {
-      for (int i = 0; i < p.vec_size_x-1; i++) {
+    for (int j = 0; j < p.vec_size_y; j++) {
+      for (int i = 0; i < p.vec_size_x; i++) {
         grid[PRESENT][j][i] = (f.init)->run(p, i, j);
       }
     }
@@ -381,8 +393,8 @@ class Grid {
 
   void init_grid_past()
   {
-    for (int j = 0; j < p.vec_size_y-1; j++) {
-      for (int i = 0; i < p.vec_size_x-1; i++) {
+    for (int j = 0; j < p.vec_size_y; j++) {
+      for (int i = 0; i < p.vec_size_x; i++) {
         grid[PAST][j][i] = (f.init_past)->run(p, i, j);
       }
     }
@@ -405,8 +417,8 @@ class Grid {
           2.0*grid[P][j][i] - grid[PAST][j][i] +
           (p.v*p.v) * (p.dt*p.dt) * 
           (
-           (grid[P][j+1][i] + grid[P][j-1][i] - 2*grid[P][j][i]) / (p.dy*p.dy)
-           + (grid[P][j][i+1] + grid[P][j][i-1] - 2*grid[P][j][i]) / (p.dx*p.dx)
+           (grid[P][j+1][i] + grid[P][j-1][i] - 2.0*grid[P][j][i]) / (p.dy*p.dy)
+           + (grid[P][j][i+1] + grid[P][j][i-1] - 2.0*grid[P][j][i]) / (p.dx*p.dx)
           );
       }
     }
@@ -414,19 +426,24 @@ class Grid {
 
   double diffv(int i, int j)
   {
-    return grid[FUTURE][j][i] - grid[PAST][j][i] / (2*p.dt);
+    double dv=0;
+
+    dv = grid[PRESENT][j][i] - grid[PAST][j][i] / (p.dt);
+    return dv;
   }
 
   double diffx(int i, int j)
   {
     double ux=0;
 
+    // 境界のポテンシャルの計算に問題がありそう
     if (0 == i) {
       ux = (grid[PRESENT][j][i+1] - grid[PRESENT][j][i]) / p.dx;
     } else if (p.vec_size_x-1 == i) {
       ux = (grid[PRESENT][j][i] - grid[PRESENT][j][i-1]) / p.dx;
     } else {
-      ux = (grid[PRESENT][j][i+1] - grid[PRESENT][j][i-1]) / (2*p.dx);
+//      ux = (grid[PRESENT][j][i+1] - grid[PRESENT][j][i-1]) / (2*p.dx);
+      ux = (grid[PRESENT][j][i+1] - grid[PRESENT][j][i]) / p.dx;
     }
     return ux;
   }
@@ -440,16 +457,16 @@ class Grid {
     } else if (p.vec_size_y-1 == j) {
       uy = (grid[PRESENT][j][i] - grid[PRESENT][j-1][i]) / p.dy;
     } else {
-      uy = (grid[PRESENT][j+1][i] - grid[PRESENT][j-1][i]) / (2*p.dy);
+//      uy = (grid[PRESENT][j+1][i] - grid[PRESENT][j-1][i]) / (2*p.dy);
+      uy = (grid[PRESENT][j+1][i] - grid[PRESENT][j][i]) / p.dy;
     }
     return uy;
   }
 
   public:
   Grid(int ninit, int ninit_past, int nsource, int nobstacle, int nboundary, double _system_size_x, double _system_size_y, double _dx, double _dy, double _dt, 
-      double _v, int energy_flag) 
-    : p(_system_size_x, _system_size_y, _dx, _dy, _dt, _v),
-      energy("energy", ios::trunc)
+      double _v, int energy_flag, string &path)
+    : p(_system_size_x, _system_size_y, _dx, _dy, _dt, _v)
 
   {
     grid = tGridVec(3, GridVec(p.vec_size_y, vector<double>(p.vec_size_x)));
@@ -458,6 +475,16 @@ class Grid {
     init_grid_present();
     set_boundary(PAST);
     set_boundary(PRESENT);
+
+    stringstream ss;
+    stringstream sst;
+    stringstream ssp;
+    ss   << path << "/" << "energy";
+    sst   << path << "/" << "T";
+    ssp   << path << "/" << "potential";
+    energy_file = ofstream(ss.str().c_str(), ios::trunc);
+    T_file = ofstream(sst.str().c_str(), ios::trunc);
+    potential_file = ofstream(ssp.str().c_str(), ios::trunc);
   }
 
   void step()
@@ -465,6 +492,7 @@ class Grid {
     (f.source)->run(p, grid);
     (f.obstacle)->run(p, grid);
     set_boundary(PRESENT);
+    set_boundary(PAST);
     update_grid();
     set_boundary(FUTURE);
 
@@ -493,6 +521,9 @@ class Grid {
     double v2  = 0;
     double ux2 = 0;
     double uy2 = 0;
+    double energy = 0;
+    double T=0;
+    double potential = 0;
 
 
     string filename = "data";
@@ -509,6 +540,32 @@ class Grid {
         v2 =  pow(diffv(i, j), 2);
         ux2 = pow(diffx(i, j), 2);
         uy2 = pow(diffy(i, j), 2);
+        //energy += v2 + p.v*p.v * (ux2 + uy2);
+        T += v2 * p.dx * p.dy;
+        potential += (ux2 + uy2) * p.v * p.v * p.dx*p.dy;
+        energy += T + potential;
+      }
+      ofs << endl;
+    }
+    this->T_file << T << endl;
+    this->potential_file << potential << endl;
+    this->energy_file << energy << endl;
+  }
+
+  void write_only_data(string &path) {
+    stringstream ss;
+
+    string filename = "data";
+    string suffix = ".dat";
+    string sep = "_";
+
+    ss   << path << "/" << filename << sep << p.n_step << suffix;
+
+    ofstream ofs(ss.str().c_str(), ios::trunc);
+
+    for (int j = 0; j < p.vec_size_y; j++) {
+      for (int i = 0; i < p.vec_size_x; i++) {
+        ofs << grid[PRESENT][j][i] << " ";
       }
       ofs << endl;
     }
@@ -522,17 +579,17 @@ class Grid {
     ss << path << "/" << filename << suffix;
     ofstream ofs(ss.str().c_str(), ios::trunc);
 
-    ofs << "system_size_x " << p.system_size_x << endl;
-    ofs << "system_size_y " << p.system_size_y << endl;
-    ofs << "t "    << p.t    << endl;
-    ofs << "dx "   << p.dx   << endl;
-    ofs << "dy "   << p.dy   << endl;
-    ofs << "dt "   << p.dt   << endl;
-    ofs << "v "    << p.v    << endl;
-    ofs << "vec_size_x " << p.vec_size_x << endl;
-    ofs << "vec_size_y " << p.vec_size_y << endl;
-    ofs << "b0 "   << p.b0   << endl;
-    ofs << "step "    << p.n_step << endl;
+    ofs << "_system_size_x=" << p.system_size_x << endl;
+    ofs << "_system_size_y=" << p.system_size_y << endl;
+    ofs << "_t="    << p.t    << endl;
+    ofs << "_dx="   << p.dx   << endl;
+    ofs << "_dy="   << p.dy   << endl;
+    ofs << "_dt="   << p.dt   << endl;
+    ofs << "_v="    << p.v    << endl;
+    ofs << "_vec_size_x=" << p.vec_size_x << endl;
+    ofs << "_vec_size_y=" << p.vec_size_y << endl;
+    ofs << "_b0="   << p.b0   << endl;
+    ofs << "_step="    << p.n_step << endl;
   }
 };
 
@@ -582,7 +639,7 @@ int main(int argc, char const* argv[])
   int step = time / dt;
 
 
-  Grid grid = Grid(init, init_past, source, obstacle, boundary, system_size_x, system_size_y, dx, dy, dt, v, energy_flag);
+  Grid grid = Grid(init, init_past, source, obstacle, boundary, system_size_x, system_size_y, dx, dy, dt, v, energy_flag, path);
 
   cout << "size: " << grid.p.system_size_x << "x" << grid.p.system_size_y << endl;
   cout << "grid: " << grid.p.vec_size_x << "x" << grid.p.vec_size_y << endl;
@@ -592,12 +649,19 @@ int main(int argc, char const* argv[])
   cout << "dt, dx, dy: " << grid.p.dt << ", " << grid.p.dx << ", " << grid.p.dy << endl;
 
 
-  grid.write_data(path);
+  // energy_flagを誤差のみ出力するかの判定に使う
+  // 面倒だから
+  if (!energy_flag) {
+    grid.write_only_data(path);
+  } else {
+  }
+
   for (int i = 0; i < step; i++) {
     grid.step();
-    grid.write_data(path);
-    if (i % 10 == 0) {
-      cout << i << endl;
+
+    if (! energy_flag) {
+      grid.write_only_data(path);
+    } else {
     }
   }
 

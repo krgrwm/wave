@@ -1,0 +1,22 @@
+#!/usr/bin/env zsh
+
+file=$1
+source $file
+
+k1=2
+k2=1
+
+cat <<EOF > "plot_diff.plt"
+X = $system_size_x
+Y = $system_size_y
+k1 = $k1
+k2 = $k2
+omega2 = $v**2 * pi**2 * ((k1/X)**2 + (k2/Y)**2)
+omega = sqrt(omega2)
+dx = $dx
+dy = $dy
+dt = $dt
+w(x, y) = sin(k1*pi*(x*dx)/X) * sin(k2*pi*(y*dy)/Y) * cos(omega * t)
+
+set isosamples 40
+EOF

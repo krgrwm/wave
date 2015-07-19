@@ -120,18 +120,67 @@ class Init_zero : public Initialize
 class Init_half : public Initialize
 {
   public:
-  double run(Parameter &p, int i, int j)
-  {
-    double xL = p.system_size_x;
-    double yL = p.system_size_y;
-    double x = i * p.dx;
-    double y = j * p.dy;
+    int k1;
+    int k2;
+    double t;
+    double omega;
+    double xL;
+    double yL;
 
-    int k1 = 2;
-    int k2 = 1;
+    Init_half(const Parameter& p, double t)
+    {
+      k1=2;
+      k2=1;
+      this->t = t;
 
-    return 0.05*sin(k1*M_PI*x/xL) * sin(k2*M_PI*y/yL);
-  }
+      this->xL = p.system_size_x;
+      this->yL = p.system_size_y;
+      double omega2 = p.v * p.v * M_PI * M_PI * ((k1/xL)*(k1/xL) + (k2/yL)*(k2/yL));
+      this->omega = sqrt(omega2);
+    }
+
+    double run(Parameter &p, int i, int j)
+    {
+      double x = i * p.dx;
+      double y = j * p.dy;
+
+      return sin(k1*M_PI*x/xL) * sin(k2*M_PI*y/yL) * cos(omega * t);
+    }
+};
+
+class Init_half_past : public Initialize
+{
+  public:
+    int k1;
+    int k2;
+    double t;
+    double omega;
+    double xL;
+    double yL;
+    Init_half ih;
+
+    Init_half_past(const Parameter& p, double t) : ih(p, 0.0)
+    {
+      k1=2;
+      k2=1;
+      this->t = t;
+
+      this->xL = p.system_size_x;
+      this->yL = p.system_size_y;
+      double omega2 = p.v * p.v * M_PI * M_PI * ((k1/xL)*(k1/xL) + (k2/yL)*(k2/yL));
+      this->omega = sqrt(omega2);
+    }
+
+    double run(Parameter &p, int i, int j)
+    {
+      double x = i * p.dx;
+      double y = j * p.dy;
+
+      return 
+        ih.run(p, i, j)
+        +
+        t * sin(k1*M_PI*x/xL) * sin(k2*M_PI*y/yL) * omega * sin(omega * 0);
+    }
 };
 
 
@@ -333,14 +382,16 @@ class Functions {
 
     Functions(){}
 
-    Functions(const int ninit, const int ninit_past, 
+    Functions(const Parameter& p, const int ninit, const int ninit_past, 
         const int nsource, const int nobstacle, const int nboundary)
     {
       vec_init = vector<p_initialize>({
           p_initialize(new Init_zero()),
           p_initialize(new Init_gauss()),
           p_initialize(new Init_gauss_pulse()),
-          p_initialize(new Init_half()),
+          p_initialize(new Init_half(p, 0.0)),
+//          p_initialize(new Init_half_past(p, -p.dt)),
+          p_initialize(new Init_half(p, -p.dt)),
           });
 
       vec_source = vector<p_source>({
@@ -410,10 +461,18 @@ class Grid {
   void update_grid()
   {
     int P = PRESENT;
+    double alpha2 = pow((p.v * p.dt / p.dx), 2);
 
     for (int j = 1; j < p.vec_size_y-1; j++) {
       for (int i = 1; i < p.vec_size_x-1; i++) {
         grid[FUTURE][j][i] = 
+//          alpha2 * (grid[P][j+1][i] + grid[P][j-1][i] + grid[P][j][i+1] + grid[P][j][i-1])
+//          +
+//          2*grid[P][j][i] * (1 - 2*alpha2)
+//          -
+//          grid[PAST][j][i]
+//          ;
+
           2.0*grid[P][j][i] - grid[PAST][j][i] +
           (p.v*p.v) * (p.dt*p.dt) * 
           (
@@ -470,7 +529,7 @@ class Grid {
 
   {
     grid = tGridVec(3, GridVec(p.vec_size_y, vector<double>(p.vec_size_x)));
-    f = Functions(ninit, ninit_past, nsource, nobstacle, nboundary);
+    f = Functions(p, ninit, ninit_past, nsource, nobstacle, nboundary);
     init_grid_past();
     init_grid_present();
     set_boundary(PAST);
@@ -649,23 +708,54 @@ int main(int argc, char const* argv[])
   cout << "dt, dx, dy: " << grid.p.dt << ", " << grid.p.dx << ", " << grid.p.dy << endl;
 
 
-  if (energy_flag) {
-    grid.write_data(path);
-  } else {
+  // energy_flagを誤差のみ出力するかの判定に使う
+  // 面倒だから
+  // half.set用
+
+  double xL = grid.p.system_size_x;
+  double yL = grid.p.system_size_y;
+  double x = xL/4;
+  double y = yL/4;
+  int vec_x = x / grid.p.dx;
+  int vec_y = y / grid.p.dy;
+
+  if (!energy_flag) {
     grid.write_only_data(path);
+  } else {
   }
+
   for (int i = 0; i < step; i++) {
     grid.step();
 
-    if (energy_flag) {
-      grid.write_data(path);
-    } else {
+    if (! energy_flag) {
       grid.write_only_data(path);
     }
-    if (i % 10 == 0) {
+
+    if (!(i % 100)) {
       cout << i << endl;
     }
   }
+
+  cout << grid.p.t << endl;
+  cout << grid.p.n_step << endl;
+  cout << "x, y = " << x << ", " << y << endl;
+  cout << "vx, vy = " << vec_x << ", " << vec_y << endl;
+  cout << grid.grid[PRESENT][vec_y][vec_x] << endl;
+
+  int k1 = 2;
+  int k2 = 1;
+  double t = grid.p.n_step * grid.p.dt;
+  double omega2 = grid.p.v * grid.p.v * M_PI * M_PI * ((k1/xL)*(k1/xL) + (k2/yL)*(k2/yL));
+  double omega = sqrt(omega2);
+  double result = 
+    sin(k1*M_PI*(vec_x*dx)/xL) * sin(k2*M_PI*(vec_y*dy)/yL) 
+    * cos(omega * t);
+  cout << "x:" << vec_x*dx << endl;
+  cout << "exact: " << result << endl;
+  cout << "error:" << endl;
+  cout << 
+    grid.p.dx << " " <<
+    abs(grid.grid[PRESENT][vec_y][vec_x] - result) << endl;
 
   grid.write_param(path);
 
