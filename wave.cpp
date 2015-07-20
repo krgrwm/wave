@@ -175,11 +175,17 @@ class Init_half_past : public Initialize
     {
       double x = i * p.dx;
       double y = j * p.dy;
+      double alpha2 = pow((p.v * p.dt / p.dx), 2);
 
       return 
         ih.run(p, i, j)
         +
-        t * sin(k1*M_PI*x/xL) * sin(k2*M_PI*y/yL) * omega * sin(omega * 0);
+        t * sin(k1*M_PI*x/xL) * sin(k2*M_PI*y/yL) * omega * sin(omega * 0)
+        +
+        alpha2/2.0 * (ih.run(p,i+1, j) + ih.run(p,i-1, j) - 2*ih.run(p, i, j) )
+        +
+        alpha2/2.0 * (ih.run(p,i, j+1) + ih.run(p,i, j-1) - 2*ih.run(p, i, j) )
+        ;
     }
 };
 
@@ -390,6 +396,8 @@ class Functions {
           p_initialize(new Init_gauss()),
           p_initialize(new Init_gauss_pulse()),
           p_initialize(new Init_half(p, 0.0)),
+          // Init_half_pastもInit_half(p, -p.dt)も同じ結果になる
+          // どちらも正しい
 //          p_initialize(new Init_half_past(p, -p.dt)),
           p_initialize(new Init_half(p, -p.dt)),
           });
